@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class TableService {
@@ -15,7 +16,12 @@ export class TableService {
 	public from: number;
 	public to: number;
 
-	constructor( itemPerPageSizes: number[] = [ 15, 30, 50, 100 ],
+	// Keep Filter
+	private routerActivated: any;
+	private routerCurrent: any;
+
+	constructor( private router: Router,
+	             itemPerPageSizes: number[] = [ 15, 30, 50, 100 ],
 	             pageSize: number = 15, maxSize: number = 5,
 	             currentPage: number = 1, from: number = 0,
 	             to: number = 0, totalRecord: number = 0, totalPage: number = 1 ) {
@@ -27,6 +33,18 @@ export class TableService {
 		this.to = to;
 		this.totalRecord = totalRecord;
 		this.totalPage = totalPage;
+
+		// Check Activated Router and Current Router
+		this.routerActivated = sessionStorage.getItem('router_activated');
+		// Get name router on url (ex: localhost:4200/user-management/users) ==> name = users (show list user)
+		this.routerCurrent = (router.url).split('/')[2];
+		// Check sessionStorage locally and save key filter, router_activated
+		if ( (!this.routerActivated && this.routerActivated === 'null') ||
+			(this.routerActivated && this.routerActivated !== 'null' &&
+				this.routerActivated !== this.routerCurrent) ) {
+			sessionStorage.setItem('filter', 'null');
+			sessionStorage.setItem('router_activated', this.routerCurrent);
+		}
 	}
 
 	get params(): object {
@@ -53,6 +71,8 @@ export class TableService {
 			// If need code for case
 		}
 
+		this.saveFilter();
+
 		return this.getFnDataLst();
 	}
 
@@ -68,6 +88,7 @@ export class TableService {
 
 	public searchAction() {
 		this.currentPage = 1;
+		this.saveFilter();
 
 		return this.getFnDataLst();
 	}
@@ -75,7 +96,43 @@ export class TableService {
 	public resestAction() {
 		this.currentPage = 1;
 		this.searchForm.reset();
+		this.saveFilter();
 
 		return this.getFnDataLst();
+	}
+
+	// Keep Filter
+	public getFilter() {
+		const filter = sessionStorage.getItem('filter');
+
+		if ( filter && filter !== 'null' ) {
+			const params = JSON.parse(filter);
+			this.searchForm.patchValue(params);
+
+			return params;
+		} else {
+			return { ...this.params, ...this.searchForm.value };
+		}
+	}
+
+	private saveFilter() {
+		if ( this.filterEmpty() ) {
+			const params = { ...this.params, ...this.searchForm.value };
+			sessionStorage.setItem('filter', JSON.stringify(params));
+		} else {
+			sessionStorage.setItem('filter', 'null');
+		}
+	}
+
+	private filterEmpty() {
+		let flag = false;
+
+		Object.keys(this.searchForm.value).forEach((key) => {
+			if ( this.searchForm.value[key] && this.searchForm.value[key] !== 'null' ) {
+				flag = true;
+			}
+		});
+
+		return flag;
 	}
 }
