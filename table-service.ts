@@ -35,15 +35,15 @@ export class TableService {
 		this.totalPage = totalPage;
 
 		// Check Activated Router and Current Router
-		this.routerActivated = sessionStorage.getItem('router_activated');
+		this.routerActivated = sessionStorage.getItem( 'router_activated' );
 		// Get name router on url (ex: localhost:4200/user-management/users) ==> name = users (show list user)
-		this.routerCurrent = (router.url).split('/')[2];
+		this.routerCurrent = ( router.url ).split( '/' )[2];
 		// Check sessionStorage locally and save key filter, router_activated
-		if ( (!this.routerActivated && this.routerActivated === 'null') ||
-			(this.routerActivated && this.routerActivated !== 'null' &&
-				this.routerActivated !== this.routerCurrent) ) {
-			sessionStorage.setItem('filter', 'null');
-			sessionStorage.setItem('router_activated', this.routerCurrent);
+		if ( ( !this.routerActivated && this.routerActivated === 'null' ) ||
+			( this.routerActivated && this.routerActivated !== 'null' &&
+				this.routerActivated !== this.routerCurrent ) ) {
+			sessionStorage.setItem( 'filter', 'null' );
+			sessionStorage.setItem( 'router_activated', this.routerCurrent );
 		}
 	}
 
@@ -103,11 +103,11 @@ export class TableService {
 
 	// Keep Filter
 	public getFilter() {
-		const filter = sessionStorage.getItem('filter');
+		const filter = sessionStorage.getItem( 'filter' );
 
 		if ( filter && filter !== 'null' ) {
-			const params = JSON.parse(filter);
-			this.searchForm.patchValue(params);
+			const params = JSON.parse( filter );
+			this.searchForm.patchValue( params );
 
 			return params;
 		} else {
@@ -118,20 +118,23 @@ export class TableService {
 	private saveFilter() {
 		if ( this.filterEmpty() ) {
 			const params = { ...this.params, ...this.searchForm.value };
-			sessionStorage.setItem('filter', JSON.stringify(params));
+			sessionStorage.setItem( 'filter', JSON.stringify( params ) );
 		} else {
-			sessionStorage.setItem('filter', 'null');
+			sessionStorage.setItem( 'filter', 'null' );
 		}
 	}
 
 	private filterEmpty() {
 		let flag = false;
 
-		Object.keys(this.searchForm.value).forEach((key) => {
-			if ( this.searchForm.value[key] && this.searchForm.value[key] !== 'null' ) {
-				flag = true;
-			}
-		});
+		// Check case use for table have not search filter
+		if ( this.searchForm ) {
+			Object.keys( this.searchForm.value ).forEach( ( key ) => {
+				if ( this.searchForm.value[key] && this.searchForm.value[key] !== 'null' ) {
+					flag = true;
+				}
+			} );
+		}
 
 		return flag;
 	}
