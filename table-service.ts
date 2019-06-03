@@ -33,18 +33,6 @@ export class TableService {
 		this.to = to;
 		this.totalRecord = totalRecord;
 		this.totalPage = totalPage;
-
-		// Check Activated Router and Current Router
-		this.routerActivated = sessionStorage.getItem( 'router_activated' );
-		// Get name router on url (ex: localhost:4200/user-management/users) ==> name = users (show list user)
-		this.routerCurrent = ( router.url ).split( '/' )[2];
-		// Check sessionStorage locally and save key filter, router_activated
-		if ( ( !this.routerActivated && this.routerActivated === 'null' ) ||
-			( this.routerActivated && this.routerActivated !== 'null' &&
-				this.routerActivated !== this.routerCurrent ) ) {
-			sessionStorage.setItem( 'filter', 'null' );
-			sessionStorage.setItem( 'router_activated', this.routerCurrent );
-		}
 	}
 
 	get params(): object {
@@ -102,12 +90,44 @@ export class TableService {
 	}
 
 	// Keep Filter
+	private getRouter() {
+		// Get current router
+		return (this.router.url).split('/')[2]; // Can change with url for you
+	}
+
+	public saveRouter() {
+		this.routerCurrent = this.getRouter();
+		this.routerActivated = sessionStorage.getItem('router_activated');
+
+		if ( this.routerActivated === 'null' || (this.routerActivated !== this.routerCurrent) ) {
+			sessionStorage.setItem('router_activated', this.routerCurrent);
+		}
+	}
+
+	private clearFilter() {
+		this.routerCurrent = this.getRouter();
+		this.routerActivated = sessionStorage.getItem('router_activated');
+
+		if ( this.routerActivated !== this.routerCurrent ) {
+			sessionStorage.setItem('filter', 'null');
+		}
+	}
+
 	public getFilter() {
-		const filter = sessionStorage.getItem( 'filter' );
+		this.clearFilter();
+		this.saveRouter();
+
+		const filter = sessionStorage.getItem('filter');
 
 		if ( filter && filter !== 'null' ) {
-			const params = JSON.parse( filter );
-			this.searchForm.patchValue( params );
+			if ( this.routerActivated === this.routerCurrent ) {
+				// update filter
+				this.updateFilter();
+			}
+
+			const updateFilter = sessionStorage.getItem('filter');
+			const params = JSON.parse(updateFilter);
+			this.searchForm.patchValue(params);
 
 			return params;
 		} else {
@@ -115,12 +135,22 @@ export class TableService {
 		}
 	}
 
-	private saveFilter() {
+	private updateFilter() {
 		if ( this.filterEmpty() ) {
 			const params = { ...this.params, ...this.searchForm.value };
-			sessionStorage.setItem( 'filter', JSON.stringify( params ) );
+			sessionStorage.setItem('filter', JSON.stringify(params));
+		}
+	}
+
+	private saveFilter() {
+		if ( this.filterEmpty() ) {
+			// Router
+			this.saveRouter();
+
+			const params = { ...this.params, ...this.searchForm.value };
+			sessionStorage.setItem('filter', JSON.stringify(params));
 		} else {
-			sessionStorage.setItem( 'filter', 'null' );
+			sessionStorage.setItem('filter', 'null');
 		}
 	}
 
