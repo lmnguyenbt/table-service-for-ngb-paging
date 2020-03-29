@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
-import { FormGroup }  from '@angular/forms';
-import { Router }     from '@angular/router';
+import { Injectable }     from '@angular/core';
+import { FormGroup }      from '@angular/forms';
+import { Router }         from '@angular/router';
 import { BrowserService } from './browser.service';
 
 @Injectable()
-export class TableServiceBK {
+export class TableService {
 	public context: any;
 	public getFuncName: string;
 	public searchForm: FormGroup;
@@ -16,8 +16,8 @@ export class TableServiceBK {
 	public currentPage: number;
 	public from: number;
 	public to: number;
-	public sort_key: string;
-	public sort_direction: string;
+	public sortKey: string;
+	public sortDirection: string;
 
 	// Keep Filter
 	private routerActivated: any;
@@ -32,21 +32,21 @@ export class TableServiceBK {
 		this.to = 0;
 		this.totalRecord = 0;
 		this.totalPage = 1;
-		this.sort_key = 'created_at';
-		this.sort_direction = 'desc';
+		this.sortKey = 'created_at';
+		this.sortDirection = 'desc';
 	}
 
 	get params(): object {
 		return {
 			currentPage: this.currentPage,
-			pageSize: this.pageSize
+			pageSize: this.pageSize,
 		};
 	}
 
 	get sortParams(): object {
 		return {
-			sort_key: this.sort_key,
-			sort_direction: this.sort_direction
+			sort_key: this.sortKey,
+			sort_direction: this.sortDirection,
 		};
 	}
 
@@ -61,15 +61,15 @@ export class TableServiceBK {
 	}
 
 	// Mapping object paging option from DB
-	public matchPagingOption(options) {
+	public matchPagingOption( options ) {
 		try {
-			this.totalItems = parseInt(options['total_record']);
-			this.pageSize = parseInt(options['length']);
-			this.totalPage = parseInt(options['total_page']);
-			this.totalRecord = parseInt(options['total_record']);
-			this.currentPage = parseInt(options['page']);
+			this.totalItems = parseInt( options.total_record );
+			this.pageSize = parseInt( options.length );
+			this.totalPage = parseInt( options.total_page );
+			this.totalRecord = parseInt( options.total_record );
+			this.currentPage = parseInt( options.page );
 		} catch ( e ) {
-			console.log('pagination', e);
+			console.log( 'pagination', e );
 		}
 	}
 
@@ -110,9 +110,9 @@ export class TableServiceBK {
 		return this.context[this.getFuncName]();
 	}
 
-	public sortAction(newValue) {
-		this.sort_key = newValue['sort_key'];
-		this.sort_direction = newValue['sort_direction'];
+	public sortAction( newValue ) {
+		this.sortKey = newValue.sort_key;
+		this.sortDirection = newValue.sort_direction;
 
 		return this.context[this.getFuncName]();
 	}
@@ -142,7 +142,7 @@ export class TableServiceBK {
 
 		const browserRefresh = this.browserService.boolBrowser;
 		if ( browserRefresh ) {
-			sessionStorage.setItem('filter', 'null');
+			sessionStorage.setItem( 'filter', 'null' );
 			this.browserService.boolBrowser = false;
 		}
 	}
